@@ -1,0 +1,446 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TOTP Generator</title>
+  <link rel="icon" type="image/png" href="https://cdn.jsdelivr.net/gh/bayucodes/assets/logo/adjibayu.png">
+  <link rel="shortcut icon" href="https://cdn.jsdelivr.net/gh/bayucodes/assets/logo/adjibayu.png">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;400;500;600;700&family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    [v-cloak] { display: none; }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: #ffffff;
+      color: #1e2a3e;
+      min-height: 100vh;
+      transition: background-color 0.3s ease, color 0.3s ease;
+    }
+    body.dark-mode {
+      background: #121826;
+      color: #e0e4e8;
+    }
+
+    /* ===== NAVBAR ===== */
+    .navbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 20px 32px;
+      border-bottom: 1px solid #e9edf2;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background-color: rgba(255,255,255,0.92);
+      backdrop-filter: blur(10px);
+    }
+    body.dark-mode .navbar {
+      background-color: rgba(18,24,38,0.92);
+      border-bottom-color: #2a3a3a;
+    }
+    .logo {
+      font-weight: 700;
+      font-size: 1.1rem;
+      background: linear-gradient(135deg, #14B8A6, #0f8b7a);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+    }
+    .darkmode-toggle {
+      background: rgba(20,184,166,0.1);
+      border: none;
+      font-size: 1.2rem;
+      cursor: pointer;
+      color: #14B8A6;
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: 0.2s;
+    }
+    .darkmode-toggle:hover { background: rgba(20,184,166,0.2); transform: scale(1.05); }
+    body.dark-mode .darkmode-toggle { background: rgba(20,184,166,0.2); }
+
+    /* ===== LAYOUT ===== */
+    .container {
+      max-width: 680px;
+      margin: 0 auto;
+      padding: 48px 24px 60px;
+    }
+
+    /* Wrapper page-header + card, jadi 2 kolom di desktop */
+    .layout {
+      display: flex;
+      flex-direction: column;
+      gap: 32px;
+    }
+    @media (min-width: 880px) {
+      .container { max-width: 980px; }
+      .layout {
+        flex-direction: row;
+        align-items: center;
+        gap: 56px;
+      }
+      .page-header {
+        flex: 0 0 380px;
+        text-align: left;
+        margin-bottom: 0;
+      }
+      .page-header .icon-wrap { margin: 0 0 18px; }
+      #app { flex: 1; min-width: 0; }
+    }
+
+    /* ===== PAGE HEADER ===== */
+    .page-header {
+      text-align: center;
+      margin-bottom: 40px;
+    }
+    .page-header .icon-wrap {
+      width: 64px;
+      height: 64px;
+      background: rgba(20,184,166,0.12);
+      border-radius: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 18px;
+      font-size: 1.8rem;
+      color: #14B8A6;
+    }
+    .page-header h1 {
+      font-size: 1.9rem;
+      font-weight: 700;
+      color: #0f2c24;
+      margin-bottom: 8px;
+    }
+    body.dark-mode .page-header h1 { color: #e0e4e8; }
+    .page-header p {
+      color: #4b5563;
+      font-size: 0.95rem;
+      line-height: 1.5;
+    }
+    body.dark-mode .page-header p { color: #8aa0b0; }
+
+    /* ===== CARD ===== */
+    .card {
+      background: #ffffff;
+      border-radius: 28px;
+      padding: 28px;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.05);
+      border: 1px solid #eef2ea;
+      margin-bottom: 20px;
+    }
+    body.dark-mode .card {
+      background: #1e2936;
+      border-color: #2d3a4a;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+    }
+
+    /* ===== FORM ===== */
+    .form-group { margin-bottom: 20px; }
+    .form-group:last-child { margin-bottom: 0; }
+    .form-group label {
+      font-weight: 600;
+      display: block;
+      margin-bottom: 8px;
+      color: #2d3e42;
+      font-size: 0.9rem;
+    }
+    body.dark-mode .form-group label { color: #cbd5e1; }
+
+    input.form-input {
+      width: 100%;
+      padding: 12px 18px;
+      border-radius: 16px;
+      border: 1px solid #d0e0d0;
+      font-size: 0.95rem;
+      background: #f8faf7;
+      font-family: 'Inter', sans-serif;
+      color: #1e2a3e;
+      transition: 0.2s;
+      appearance: none;
+    }
+    .form-input:focus {
+      outline: none;
+      border-color: #14B8A6;
+      box-shadow: 0 0 0 3px rgba(20,184,166,0.15);
+    }
+    body.dark-mode .form-input {
+      background: #2d3e42;
+      border-color: #3a5a5a;
+      color: #e0e4e8;
+    }
+    body.dark-mode .form-input::placeholder { color: #8aa0b0; }
+    body.dark-mode .form-input:focus {
+      border-color: #14B8A6;
+      box-shadow: 0 0 0 3px rgba(20,184,166,0.2);
+    }
+
+    .form-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+    }
+    @media (max-width: 480px) { .form-row { grid-template-columns: 1fr; } }
+
+    /* ===== TOMBOL GENERATE ===== */
+    .btn-generate {
+      width: 100%;
+      background: #14B8A6;
+      color: white;
+      border: none;
+      padding: 14px 28px;
+      border-radius: 40px;
+      font-weight: 600;
+      font-size: 1rem;
+      cursor: pointer;
+      font-family: 'Inter', sans-serif;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      transition: 0.2s;
+      margin-top: 8px;
+    }
+    .btn-generate:hover { background: #0f9e8e; transform: translateY(-2px); }
+    .btn-generate:active { transform: translateY(0); }
+
+    /* ===== ERROR ===== */
+    .error-msg {
+      display: none;
+      padding: 12px 18px;
+      border-radius: 16px;
+      background: #fee2e2;
+      color: #991b1b;
+      font-size: 0.9rem;
+      margin-top: 12px;
+      border: 1px solid #fca5a5;
+    }
+    body.dark-mode .error-msg {
+      background: #7f1d1d;
+      color: #fee2e2;
+      border-color: #991b1b;
+    }
+    .error-msg.show { display: flex; align-items: center; gap: 8px; }
+
+    /* ===== RESULT (TOKEN) ===== */
+    .result-card {
+      display: none;
+      text-align: center;
+    }
+    .result-card.show { display: block; }
+
+    .totp-timer { margin-bottom: 18px; }
+    .totp-timer span {
+      font-size: 0.82rem;
+      color: #6b7c8a;
+    }
+    body.dark-mode .totp-timer span { color: #8aa0b0; }
+
+    progress.totp-progress {
+      display: block;
+      width: 100%;
+      height: 6px;
+      margin-top: 10px;
+      border-radius: 999px;
+      border: none;
+      appearance: none;
+      -webkit-appearance: none;
+    }
+    progress.totp-progress::-webkit-progress-bar {
+      background: #eef2ea;
+      border-radius: 999px;
+    }
+    progress.totp-progress::-webkit-progress-value {
+      background: linear-gradient(135deg, #14B8A6, #0f8b7a);
+      border-radius: 999px;
+      transition: width 1s linear;
+    }
+    progress.totp-progress::-moz-progress-bar {
+      background: linear-gradient(135deg, #14B8A6, #0f8b7a);
+      border-radius: 999px;
+    }
+    body.dark-mode progress.totp-progress::-webkit-progress-bar { background: #2d3e42; }
+
+    .token-box {
+      display: inline-flex;
+      align-items: center;
+      gap: 16px;
+      padding: 20px 28px;
+      background: #f8faf7;
+      border-radius: 20px;
+      border: 1px solid #eef2ea;
+    }
+    body.dark-mode .token-box {
+      background: #2d3e42;
+      border-color: #3a5a5a;
+    }
+    #token {
+      font-family: 'Poppins', sans-serif;
+      font-size: 2.1rem;
+      font-weight: 600;
+      letter-spacing: 0.12em;
+      color: #0f2c24;
+      line-height: 1;
+    }
+    body.dark-mode #token { color: #e0e4e8; }
+
+    .copy-btn {
+      background: #14B8A6;
+      color: white;
+      border: none;
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      cursor: pointer;
+      font-size: 1rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      transition: 0.2s;
+    }
+    .copy-btn:hover { background: #0f9e8e; transform: translateY(-2px); }
+    .copy-btn.copied { background: #2fae63; }
+
+    @media (max-width: 480px) {
+      #token { font-size: 1.6rem; }
+      .token-box { padding: 16px 20px; gap: 12px; }
+    }
+
+    /* ===== FOOTER ===== */
+    footer {
+      text-align: center;
+      padding: 20px 32px;
+      color: #5b6e64;
+      font-size: 0.82rem;
+      border-top: 1px solid #eef2ea;
+    }
+    body.dark-mode footer {
+      color: #8aa0b0;
+      border-top-color: #2a3a3a;
+    }
+    footer a { color: #14B8A6; text-decoration: none; }
+    footer a:hover { text-decoration: underline; }
+  </style>
+</head>
+<body>
+
+  <!-- NAVBAR -->
+  <nav class="navbar">
+    <div class="logo">TOTP Generator</div>
+    <button class="darkmode-toggle" id="darkmodeToggle"><i class="fas fa-moon"></i></button>
+  </nav>
+
+  <!-- MAIN -->
+  <div class="container">
+
+    <div class="layout">
+
+    <!-- Header -->
+    <div class="page-header">
+      <div class="icon-wrap"><i class="fas fa-key"></i></div>
+      <h1>TOTP Token Generator</h1>
+      <p>Masukkan secret key 2FA kamu, lalu generate kode OTP secara instan.</p>
+    </div>
+
+    <section id="app" v-cloak>
+
+      <!-- Form Card -->
+      <div class="card">
+        <div class="form-group">
+          <label><i class="fas fa-lock" style="color:#14B8A6;margin-right:6px;"></i>Secret Key</label>
+          <input type="text" class="form-input" v-model="secret_key" placeholder="Contoh: JBSWY3DPEHPK3PXP" @keydown.enter="generate">
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label><i class="fas fa-hashtag" style="color:#14B8A6;margin-right:6px;"></i>Jumlah Digit</label>
+            <input type="text" class="form-input" v-model="digits" placeholder="Umumnya 6" @keydown.enter="generate">
+          </div>
+          <div class="form-group">
+            <label><i class="fas fa-clock" style="color:#14B8A6;margin-right:6px;"></i>Periode (detik)</label>
+            <input type="text" class="form-input" v-model="period" placeholder="Umumnya 30" @keydown.enter="generate">
+          </div>
+        </div>
+
+        <button class="btn-generate" @click="generate">
+          <i class="fas fa-arrows-rotate"></i> Generate Token
+        </button>
+
+        <div class="error-msg" :class="{show: errorMsg}">
+          <i class="fas fa-circle-exclamation"></i>
+          <span>{{ errorMsg }}</span>
+        </div>
+      </div>
+
+      <!-- Result Card -->
+      <div class="card result-card" :class="{show: hasGenerated}">
+        <div class="totp-timer">
+          <span>Diperbarui dalam {{ updatingIn }} detik</span>
+          <progress class="totp-progress" v-bind:value="updatingIn" :max="active_period"></progress>
+        </div>
+        <div class="token-box">
+          <p id="token">{{ token }}</p>
+          <button class="copy-btn" id="clipboard-button" data-clipboard-target="#token" title="Salin token">
+            <i class="fas fa-copy"></i>
+          </button>
+        </div>
+      </div>
+
+    </section>
+
+    </div>
+
+  </div>
+
+  <!-- FOOTER -->
+  <footer>
+    <p>Dibuat oleh <a href="https://dan.hersam.com" target="_blank" rel="noopener">Dan Hersam</a> &nbsp;·&nbsp;
+      <a href="https://github.com/jaden/totp-generator" target="_blank" rel="noopener">Source</a> &nbsp;·&nbsp;
+      Tampilan oleh <a href="https://adjibayu.biz.id" target="_blank" rel="noopener">Adji Bayu</a></p>
+  </footer>
+
+  <script defer src="js/assets/vue-3.4.20.global.prod.js"></script>
+  <script defer src="js/assets/otpauth-9.1.3.min.js"></script>
+  <script defer src="js/assets/clipboard-2.0.6.min.js"></script>
+  <script defer src="js/app.js?v=1.3"></script>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', function () {
+      // ===== DARK MODE (default aktif) =====
+      document.body.classList.add('dark-mode');
+      const dmIcon = document.querySelector('#darkmodeToggle i');
+      dmIcon.classList.replace('fa-moon', 'fa-sun');
+
+      document.getElementById('darkmodeToggle').addEventListener('click', function () {
+        document.body.classList.toggle('dark-mode');
+        const ic = document.querySelector('#darkmodeToggle i');
+        if (document.body.classList.contains('dark-mode')) {
+          ic.classList.replace('fa-moon', 'fa-sun');
+        } else {
+          ic.classList.replace('fa-sun', 'fa-moon');
+        }
+      });
+
+      // ===== COPY FEEDBACK (tidak mengubah logic app.js) =====
+      const copyBtn = document.getElementById('clipboard-button');
+      copyBtn.addEventListener('click', function () {
+        const icon = copyBtn.querySelector('i');
+        copyBtn.classList.add('copied');
+        icon.classList.replace('fa-copy', 'fa-check');
+        setTimeout(function () {
+          copyBtn.classList.remove('copied');
+          icon.classList.replace('fa-check', 'fa-copy');
+        }, 1500);
+      });
+    });
+  </script>
+
+</body>
+</html>

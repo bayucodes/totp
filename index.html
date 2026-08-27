@@ -209,6 +209,38 @@
     }
     .btn-generate:hover { background: #0f9e8e; transform: translateY(-2px); }
     .btn-generate:active { transform: translateY(0); }
+    .btn-generate:disabled {
+      opacity: 0.75;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    @keyframes tokenPulse {
+      0% { box-shadow: 0 0 0 0 rgba(20,184,166,0.55); }
+      70% { box-shadow: 0 0 0 16px rgba(20,184,166,0); }
+      100% { box-shadow: 0 0 0 0 rgba(20,184,166,0); }
+    }
+    .token-box.pulse {
+      animation: tokenPulse 0.9s ease-out;
+    }
+
+    .updated-badge {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      margin-top: 14px;
+      font-size: 0.82rem;
+      font-weight: 600;
+      color: #14B8A6;
+      opacity: 0;
+      transform: translateY(-4px);
+      transition: opacity 0.25s ease, transform 0.25s ease;
+    }
+    .updated-badge.show {
+      opacity: 1;
+      transform: translateY(0);
+    }
 
     /* ===== ERROR ===== */
     .error-msg {
@@ -369,8 +401,9 @@
           </div>
         </div>
 
-        <button class="btn-generate" @click="generate">
-          <i class="fas fa-arrows-rotate"></i> Generate Token
+        <button class="btn-generate" @click="generate" :disabled="isGenerating">
+          <i :class="isGenerating ? 'fas fa-spinner fa-spin' : 'fas fa-arrows-rotate'"></i>
+          {{ isGenerating ? 'Memproses...' : 'Generate Token' }}
         </button>
 
         <div class="error-msg" :class="{show: errorMsg}">
@@ -385,11 +418,14 @@
           <span>Diperbarui dalam {{ updatingIn }} detik</span>
           <progress class="totp-progress" v-bind:value="updatingIn" :max="active_period"></progress>
         </div>
-        <div class="token-box">
+        <div class="token-box" :class="{pulse: justUpdated}">
           <p id="token">{{ token }}</p>
           <button class="copy-btn" id="clipboard-button" data-clipboard-target="#token" title="Salin token">
             <i class="fas fa-copy"></i>
           </button>
+        </div>
+        <div class="updated-badge" :class="{show: justUpdated}">
+          <i class="fas fa-circle-check"></i> Token berhasil diperbarui
         </div>
       </div>
 

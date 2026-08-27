@@ -20,7 +20,7 @@ Generator kode OTP (One-Time Password) berbasis TOTP (Time-based One-Time Passwo
 
 ```
 totpghosterx/
-├── index.html              # Tampilan & markup halaman
+├── index.html               # Tampilan & markup halaman
 └── js/
     ├── app.js               # Logic utama (Vue 3): generate token, validasi, timer
     └── assets/
@@ -60,7 +60,7 @@ Secret key akan otomatis terisi dan token langsung ter-generate saat halaman dim
 
 ## Kredit
 
-- Logic TOTP awal oleh [Dan Hersam](https://danhersam.com) — [Original Source](https://github.com/jaden/totp-generator)
+- Logic TOTP awal oleh [Dan Hersam](https://totp.danhersam.com) — [Original Source](https://github.com/jaden/totp-generator)
 - Tampilan & penyesuaian oleh [Muhamad Adji Bayu Saputra](https://adjibayu.biz.id)
 
 ## Catatan Keamanan

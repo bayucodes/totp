@@ -29,7 +29,7 @@ function parseURLSearch(search) {
 const app = Vue.createApp({
   data() {
     return {
-      secret_key: 'JBSWY3DPEHPK3PXP',
+      secret_key: 'SCRETKEYANDA',
       digits: 6,
       period: 30,
       algorithm: 'SHA1',
@@ -42,7 +42,7 @@ const app = Vue.createApp({
       justUpdated: false,
       // nilai yang benar-benar dipakai untuk generate token
       // (baru berubah saat tombol "Generate" diklik)
-      active_secret: 'JBSWY3DPEHPK3PXP',
+      active_secret: 'SECRETKEYANDA',
       active_digits: 6,
       active_period: 30,
     };

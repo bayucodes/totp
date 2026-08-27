@@ -38,6 +38,8 @@ const app = Vue.createApp({
       clipboardButton: null,
       errorMsg: '',
       hasGenerated: false,
+      isGenerating: false,
+      justUpdated: false,
       // nilai yang benar-benar dipakai untuk generate token
       // (baru berubah saat tombol "Generate" diklik)
       active_secret: 'JBSWY3DPEHPK3PXP',
@@ -73,6 +75,10 @@ const app = Vue.createApp({
     generate: function () {
       this.errorMsg = '';
 
+      if (this.isGenerating) {
+        return;
+      }
+
       const secret = this.secret_key;
       const digits = parseInt(this.digits) || 6;
       const period = parseInt(this.period) || 30;
@@ -91,17 +97,36 @@ const app = Vue.createApp({
         return;
       }
 
-      this.active_secret = secret;
-      this.active_digits = digits;
-      this.active_period = period;
-      this.hasGenerated = true;
+      this.isGenerating = true;
 
-      if (this.intervalHandle) {
-        clearInterval(this.intervalHandle);
-      }
+      // jeda sebentar biar animasi loading kelihatan, sekaligus penanda proses "generate"
+      setTimeout(() => {
+        this.active_secret = secret;
+        this.active_digits = digits;
+        this.active_period = period;
+        this.hasGenerated = true;
 
-      this.update();
-      this.intervalHandle = setInterval(this.update, 1000);
+        // update address bar jadi https://domain/#/SECRETKEY tanpa reload halaman
+        try {
+          const newHash = '#/' + encodeURIComponent(secret);
+          if (window.location.hash !== newHash) {
+            history.replaceState(null, '', newHash);
+          }
+        } catch (e) {
+          // abaikan kalau browser tidak izinkan (mis. dibuka dari file://)
+        }
+
+        if (this.intervalHandle) {
+          clearInterval(this.intervalHandle);
+        }
+
+        this.update();
+        this.intervalHandle = setInterval(this.update, 1000);
+
+        this.isGenerating = false;
+        this.justUpdated = true;
+        setTimeout(() => { this.justUpdated = false; }, 1000);
+      }, 350);
     },
 
     update: function () {
